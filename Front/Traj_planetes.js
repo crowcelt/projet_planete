@@ -5,7 +5,7 @@ let t = 0;
 let scaleFactor = 1e-9;
 
 function setup() {
-    let canvas = createCanvas(800, 800);
+    let canvas = createCanvas(700, 700);
     canvas.parent("canvasContainer");
     background(0);
 
