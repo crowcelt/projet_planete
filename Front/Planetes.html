@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualisation des trajectoires</title>
+
+    <!-- Import de p5.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+    <!--script-->
+    <script src="Traj_planetes.js"></script>
+
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #fileInput {
+            margin-top: 20px;
+        }
+        #controlsBox {
+        position: fixed;        /* reste fixe même si la page scroll */
+        left: 20px;             /* collé à gauche */
+        top: 50%;               /* milieu vertical */
+        transform: translateY(-50%); /* centrage vertical parfait */
+        width: 220px;
+        padding: 15px;
+
+         background: #222;
+        border: 1px solid #444;
+        border-radius: 8px;
+
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+#planetCheckboxes label {
+    display: block;
+    margin: 6px 0;
+    cursor: pointer;
+}
+    </style>
+</head>
+
+<body>
+    <h1>Visualisation des trajectoires (Projet CIR1)</h1>
+
+    <p>Chargez votre fichier JSON généré par le programme C :</p>
+    <input type="file" id="fileInput" accept=".json">
+<div id="controlsBox">
+    <h3>Affichage des planètes</h3>
+    <div id="planetCheckboxes"></div>
+</div>
+    <div id="canvasContainer"></div>
+</body>
+</html>
