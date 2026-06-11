@@ -10,7 +10,7 @@ all:
 	$(CC) $(CFLAGS) -c c_files/solvers.c   -o objects/solvers.o
 	$(CC) $(CFLAGS) -c c_files/energy.c    -o objects/energy.o
 	$(CC) $(CFLAGS) -c c_files/export.c    -o objects/export.o
-	$(CC) $(CFLAGS) -c main.c              -o objects/main.o
+	$(CC) $(CFLAGS) -c c_files/main.c              -o objects/main.o
 	$(CC) objects/*.o -o kepler $(LFLAGS)
  
 clean:
