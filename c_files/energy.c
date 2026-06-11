@@ -3,7 +3,7 @@
  * @brief Energy computation and conservation verification.
  */
 
-#include "energy.h"
+#include "../header/energy.h"
 #include <math.h>
 #include <stdio.h>
 

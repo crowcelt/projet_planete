@@ -9,12 +9,12 @@
  *   4. Export of all trajectories to the JSON exchange file
  */
 
-#include "vector.h"
-#include "trajectory.h"
-#include "planet.h"
-#include "solvers.h"
-#include "energy.h"
-#include "export.h"
+#include "../header/vector.h"
+#include "../header/trajectory.h"
+#include "../header/planet.h"
+#include "../header/solvers.h"
+#include "../header/energy.h"
+#include "../header/export.h"
 
 #include <stdio.h>
 
