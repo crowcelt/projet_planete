@@ -6,6 +6,8 @@
 #include "../header/planet.h"
 #include <string.h>
 #include <stdio.h>
+#include "../header/planet.h"
+#include <stdio.h>
 
 int planet_init(Planet *planet, const char *name, double mass,
                 double perihelion, double v0)

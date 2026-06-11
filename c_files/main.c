@@ -9,12 +9,12 @@
  *   4. Export of all trajectories to the JSON exchange file
  */
 
-#include "../header/vector.h"
-#include "../header/trajectory.h"
-#include "../header/planet.h"
-#include "../header/solvers.h"
-#include "../header/energy.h"
-#include "../header/export.h"
+#include "header/vector.h"
+#include "header/trajectory.h"
+#include "header/planet.h"
+#include "header/solvers.h"
+#include "header/energy.h"
+#include "header/export.h"
 
 #include <stdio.h>
 
@@ -31,17 +31,17 @@ int main(void)
     Planet planets[3];
     Vector r_sun = {0.0, 0.0, 0.0};
 
-    /*
+    /* ------------------------------------------------------------------
      * Unit tests — comment out once validated
-     */
+     * ------------------------------------------------------------------ */
     vector_test();
     point_test();
     trajectory_test();
     planet_test();
 
-    /* 
+    /* ------------------------------------------------------------------
      * Euler simulation
-     */
+     * ------------------------------------------------------------------ */
     if (planet_init(&earth_euler, "earth-euler",
                     MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
         fprintf(stderr, "ERROR: planet_init earth-euler\n");
@@ -53,9 +53,9 @@ int main(void)
     }
     printf("Euler:     %d points computed.\n", earth_euler.trajectory.size);
 
-    /* 
+    /* ------------------------------------------------------------------
      * Asymmetric Euler simulation
-     */
+     * ------------------------------------------------------------------ */
     if (planet_init(&earth_asym, "earth-euler-asym",
                     MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
         fprintf(stderr, "ERROR: planet_init earth-euler-asym\n");
@@ -67,9 +67,9 @@ int main(void)
     }
     printf("Euler asym: %d points computed.\n", earth_asym.trajectory.size);
 
-    /*
+    /* ------------------------------------------------------------------
      * RK2 simulation
-     */
+     * ------------------------------------------------------------------ */
     if (planet_init(&earth_rk2, "earth-RK2",
                     MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
         fprintf(stderr, "ERROR: planet_init earth-RK2\n");
@@ -81,18 +81,18 @@ int main(void)
     }
     printf("RK2:        %d points computed.\n", earth_rk2.trajectory.size);
 
-    /*
+    /* ------------------------------------------------------------------
      * Energy conservation check (prints to stdout)
-     **/
+     * ------------------------------------------------------------------ */
     /* Uncomment to see detailed energy tables: */
     /* energy_check(&earth_euler, MASS_SUN, r_sun); */
     /* energy_check(&earth_asym,  MASS_SUN, r_sun); */
     /* energy_check(&earth_rk2,   MASS_SUN, r_sun); */
     (void)r_sun; /* suppress unused warning when checks are commented out */
 
-    /* 
+    /* ------------------------------------------------------------------
      * Export to JSON
-     **/
+     * ------------------------------------------------------------------ */
     planets[0] = earth_euler;
     planets[1] = earth_asym;
     planets[2] = earth_rk2;
@@ -102,9 +102,9 @@ int main(void)
         return 1;
     }
 
-    /* 
-    * Cleanup
-    **/
+    /* ------------------------------------------------------------------
+     * Cleanup
+     * ------------------------------------------------------------------ */
     planet_free(&earth_euler);
     planet_free(&earth_asym);
     planet_free(&earth_rk2);
