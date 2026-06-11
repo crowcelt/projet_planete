@@ -3,10 +3,10 @@
  * @brief Implementation of the Planet structure and initialization.
  */
 
-#include "../headers/planet.h"
+#include "planet.h"
 #include <string.h>
 #include <stdio.h>
-#include "../headers/planet.h"
+#include "planet.h"
 #include <stdio.h>
 
 int planet_init(Planet *planet, const char *name, double mass,

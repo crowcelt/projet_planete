@@ -3,7 +3,7 @@
  * @brief ODE integration methods: Euler, asymmetric Euler, and Runge-Kutta 2.
  */
 
-#include "../headers/solvers.h"
+#include "solvers.h"
 #include <math.h>
 #include <stddef.h>
 

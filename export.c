@@ -3,7 +3,7 @@
  * @brief Export trajectories to the project's fixed JSON exchange format.
  */
 
-#include "../headers/export.h"
+#include "export.h"
 #include <stdio.h>
 
 void export_planet(FILE *file, const Planet *planet, int is_last)

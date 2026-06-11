@@ -3,7 +3,7 @@
  * @brief Implementation of 3D vector operations.
  */
 
-#include "../headers/vector.h"
+#include "vector.h"
 #include <math.h>
 #include <stdio.h>
 
