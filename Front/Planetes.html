@@ -1,41 +1,79 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <link rel="stylesheet" href="Style.css" type="text/css">
-
     <meta charset="UTF-8">
-    <title>Visualisation des trajectoires</title>
-
-    <!-- Import de p5.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-
+    <title>Visualisation des trajectoires – Projet CIR1</title>
+    <link rel="stylesheet" href="Style.css">
 </head>
 
-<div id="planetInfoPopup" class="popup">
-    <div class="popup-content">
-        <span id="closePopup">&times;</span>
-        <h2 id="popupTitle"></h2>
-        <p id="popupDetails"></p>
-    </div>
-</div>
-
 <body>
-    <h1>Visualisation des trajectoires (Projet CIR1)</h1>
 
+    <!-- POPUP INFO PLANÈTE -->
+    <div id="planetInfoPopup" class="popup">
+        <div class="popup-content">
+            <span id="closePopup">&times;</span>
+            <h2 id="popupTitle"></h2>
+            <p id="popupDetails"></p>
+        </div>
+    </div>
+
+    <!-- TITRE + IMPORT JSON -->
+    <h1>Visualisation des trajectoires (Projet CIR1)</h1>
     <p>Chargez votre fichier JSON généré par le programme C :</p>
     <input type="file" id="fileInput" accept=".json">
-<div id="controlsBox">
-    <div id="accordionContainer"></div>
-    <h3>Affichage des planètes</h3>
-    <div id="planetCheckboxes"></div>
-</div>
+
+    <!-- PANNEAU DE CONTRÔLE FIXE -->
+    <div id="controlsBox">
+
+        <h3>Affichage des trajectoires</h3>
+
+        <!-- ACCORDÉONS PLANÈTES -->
+        <div id="accordionContainer">
+
+            <!-- Exemple : Mercure -->
+            <div class="accordion-item">
+                <button class="accordion-header">Mercure</button>
+                <div class="accordion-content">
+                    <label>
+                        <input type="checkbox" class="trajCheck" data-planet="Mercure" data-method="Euler">
+                        Trajectoire Euler
+                    </label>
+
+                    <label>
+                        <input type="checkbox" class="trajCheck" data-planet="Mercure" data-method="RK">
+                        Trajectoire RK
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tu peux dupliquer ce bloc pour les autres planètes
+                 OU laisser ton JS les générer automatiquement -->
+        </div>
+
+        <!-- SLIDER ZOOM (BLANC) -->
+        <div class="slider-container">
+            <label for="zoomSlider">Zoom</label>
+            <input type="range" id="zoomSlider" min="0" max="2" step="0.01" value="1">
+        </div>
+
+    </div>
+
+    <!-- CONTENEUR DU CANVAS P5.JS -->
     <div id="canvasContainer"></div>
-</body>
-<!--script-->
+
+    <!-- CRÉDITS -->
+    <div id="credits">
+        <footer>
+            Projet CIR1 | Visualisation des trajectoires • Réalisé par Le Gall Corre Mickaël et Raphaël Corre © 2026
+        </footer>
+    </div>
+
+    <!-- LIBRAIRIE P5.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
+
+    <!-- TON SCRIPT -->
     <script src="Traj_planetes.js"></script>
-<div id="credits">
-<footer>
-    Projet CIR1 – Visualisation des trajectoires • Réalisé par Le Gall Corre Mickaël et Raphaël Corre – 2026
-</footer>
-</div>
+
+</body>
 </html>
+

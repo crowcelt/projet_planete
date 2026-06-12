@@ -110,6 +110,7 @@ h1 {
 #canvasContainer canvas {
     background-image: url("etoiles.jpg");
     background-size: cover;
+    background-repeat: no-repeat;
     background-position: center;
     border-radius: 10px;
     border: 2px solid #3a3a4a;
@@ -197,3 +198,4 @@ h1 {
     margin: 10px 0;
     color: #ddd;
 }
+
