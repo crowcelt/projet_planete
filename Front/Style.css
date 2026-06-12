@@ -3,7 +3,7 @@
 body {
     margin: 0;
     padding: 0;
-    background-color: #202050; /* fond neutre derrière le canvas */
+    background-color: #202050;
     font-family: "Segoe UI", Arial, sans-serif;
     color: #e0e0e0;
 }
@@ -54,7 +54,7 @@ h1 {
     backdrop-filter: blur(6px);
 }
 
-/* ======== CASES À COCHER ======== */
+/* ======== CASES A COCHER ======== */
 
 #planetCheckboxes label {
     display: flex;
@@ -85,19 +85,8 @@ h1 {
 /* ======== CANVAS ======== */
 
 #canvasContainer {
-    margin-left: 350px; 
+    margin-left: 350px;
     padding-top: 20px;
-}
-
-/* Fond étoilé derrière les planètes */
-#canvasContainer canvas {
-    background-image: url("etoiles.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 10px;
-    border: 2px solid #3a3a4a;
-    box-shadow: 0 0 20px rgba(0,0,0,0.7);
 }
 
 #credits {
@@ -109,10 +98,11 @@ h1 {
     font-size: 14px;
     margin-top: 20px;
 }
+
 /* ===== POPUP ===== */
 
 .popup {
-    display: none; /* caché par défaut */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
@@ -145,6 +135,7 @@ h1 {
 #closePopup:hover {
     color: #77c3ff;
 }
+
 .accordion {
     margin-top: 20px;
 }
@@ -181,4 +172,3 @@ h1 {
     margin: 10px 0;
     color: #ddd;
 }
-

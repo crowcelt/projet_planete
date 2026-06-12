@@ -10,6 +10,20 @@ let scaleFactor = 1;
 let slider;
 let starBackground;
 
+//Facteur reglable pour la taille des planetes 
+let planetSizeFactor = 0.001;
+
+// Rayons reels des planetes (km) 
+const realPlanetRadius = {
+    "Mercure": 2440,
+    "Vénus": 6052,
+    "Terre": 6371,
+    "Mars": 3389,
+    "Jupiter": 69911,
+    "Saturne": 58232,
+    "Uranus": 25362,
+    "Neptune": 24622
+};
 
 /* ============================
    PRELOAD
@@ -18,7 +32,6 @@ let starBackground;
 function preload() {
     starBackground = loadImage("etoiles.jpg");
 }
-
 
 /* ============================
    SETUP
@@ -34,25 +47,35 @@ function setup() {
         .addEventListener("change", loadJSONFile);
 }
 
-
 /* ============================
    DRAW
 ============================ */
+
+const planetcolor = {
+    "Mercure": "#b1b1b1",
+    "Vénus": "#e5c27a",
+    "Terre": "#6b93d6",
+    "Mars": "#c1440e",
+    "Jupiter": "#d8ca9d",
+    "Saturne": "#f0e68c",
+    "Uranus": "#afeeee",
+    "Neptune": "#4169e1"
+};
 
 function draw() {
     background(0);
 
     scaleFactor = 1e-9 * slider.value();
 
+    /* FOND ETOILE */
     if (starBackground) {
         push();
-        translate(width / 2, height / 2);
-        scale(scaleFactor * 0.15);
-        imageMode(CENTER);
-        image(starBackground, 0, 0);
+        imageMode(CORNER);
+        image(starBackground, 0, 0, width, height);
         pop();
     }
 
+    /* Soleil */
     fill(255, 200, 0);
     noStroke();
     ellipse(width / 2, height / 2, 20, 20);
@@ -65,15 +88,14 @@ function draw() {
         let trajData = trajectories[planetName];
 
         if (trajectoryVisibility[planetName].Euler && trajData.Euler)
-            drawTrajectory(trajData.Euler, "#ff3300", planetName);
+            drawTrajectory(trajData.Euler, planetcolor[planetName], planetName);
 
         if (trajectoryVisibility[planetName].RK2 && trajData.RK2)
-            drawTrajectory(trajData.RK2, "#093aff", planetName);
+            drawTrajectory(trajData.RK2, planetcolor[planetName], planetName);
     }
 
     t++;
 }
-
 
 /* ============================
    TRAJECTOIRE
@@ -88,7 +110,7 @@ function drawTrajectory(traj, color, planetName) {
 
     for (let p of traj) {
         let x = width / 2 + p[0][0] * scaleFactor;
-        let y = height / 2 + p[0][1] * scaleFactor; // ✔ corrigé
+        let y = height / 2 + p[0][1] * scaleFactor;
         vertex(x, y);
     }
 
@@ -100,16 +122,19 @@ function drawTrajectory(traj, color, planetName) {
     let px = width / 2 + pos[0] * scaleFactor;
     let py = height / 2 + pos[1] * scaleFactor;
 
+    // Taille réaliste de la planète 
+    let radiusKm = realPlanetRadius[planetName] || 3000;
+    let displaySize = radiusKm * planetSizeFactor;
+
     fill(color);
     noStroke();
-    ellipse(px, py, 10, 10);
+    ellipse(px, py, displaySize, displaySize);
 
     planetPositions[planetName] = { x: px, y: py };
 
     fill(255);
     text(planetName, px + 12, py);
 }
-
 
 /* ============================
    NORMALISATION JSON
@@ -165,7 +190,6 @@ function normalizeTrajectory(data) {
     return result;
 }
 
-
 /* ============================
    CHARGEMENT JSON
 ============================ */
@@ -207,9 +231,8 @@ function loadJSONFile(event) {
     reader.readAsText(file);
 }
 
-
 /* ============================
-   ACCORDÉON
+   ACCORDEON
 ============================ */
 
 function createAccordion() {
@@ -277,7 +300,6 @@ function activateCheckboxes() {
     });
 }
 
-
 /* ============================
    POPUP
 ============================ */
@@ -333,6 +355,17 @@ const planetImages = {
     "Neptune": "neptune.jpg"
 };
 
+const planetLinks = {
+    "Mercure": "https://cnes.fr/dossiers/planete-mercure",
+    "Vénus": "https://cnes.fr/dossiers/planete-venus",
+    "Terre": "https://cnes.fr/dossiers/planete-terre",
+    "Mars": "https://cnes.fr/dossiers/planete-mars",
+    "Jupiter": "https://cnes.fr/dossiers/planete-jupiter",
+    "Saturne": "https://cnes.fr/dossiers/planete-saturne",
+    "Uranus": "https://cnes.fr/dossiers/planete-uranus",
+    "Neptune": "https://cnes.fr/dossiers/planete-neptune"
+};
+
 function openPlanetPopup(name) {
     document.getElementById("popupTitle").textContent = name;
 
@@ -343,6 +376,11 @@ function openPlanetPopup(name) {
     if (img) {
         img.src = planetImages[name] || "";
         img.style.display = planetImages[name] ? "block" : "none";
+    }
+
+    const moreLink = document.getElementById("popupMore");
+    if (moreLink) {
+        moreLink.href = planetLinks[name] || "#";
     }
 
     document.getElementById("planetInfoPopup").style.display = "flex";

@@ -8,13 +8,16 @@
 
 <body>
 
-    <!-- POPUP INFO PLANÈTE -->
+    <!-- POPUP INFO PLANETE -->
     <div id="planetInfoPopup" class="popup">
         <div class="popup-content">
             <img id="popupImage" style="width:150px; border-radius:8px; margin:10px 0;">
             <span id="closePopup">&times;</span>
             <h2 id="popupTitle"></h2>
             <p id="popupDetails"></p>
+            <a id="popupMore" href="#" target="_blank" style="color:#4aa3ff; text-decoration:underline;">
+            Pour en savoir plus
+            </a>
         </div>
     </div>
 
@@ -23,12 +26,12 @@
     <p>Chargez votre fichier JSON généré par le programme C :</p>
     <input type="file" id="fileInput" accept=".json">
 
-    <!-- PANNEAU DE CONTRÔLE FIXE -->
+    <!-- PANNEAU DE CONTROLE FIXE -->
     <div id="controlsBox">
 
         <h3>Affichage des trajectoires</h3>
 
-        <!-- ACCORDÉONS PLANÈTES -->
+        <!-- ACCORDEONS PLANETES -->
         <div id="accordionContainer">
 
             <!-- Exemple : Mercure -->
@@ -49,10 +52,10 @@
 
         </div>
 
-        <!-- SLIDER ZOOM (BLANC) -->
+        <!-- ZOOM (BLANC) -->
         <div class="slider-container">
             <label for="zoomSlider">Zoom</label>
-            <input type="range" id="zoomSlider" min="0" max="2" step="0.01" value="1">
+            <input type="range" id="zoomSlider" min="0.052" max="2" step="0.01" value="1">
         </div>
 
     </div>
@@ -70,7 +73,7 @@
     <!-- LIBRAIRIE P5.JS -->
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.min.js"></script>
 
-    <!-- TON SCRIPT -->
+    <!-- SCRIPT -->
     <script src="Traj_planetes.js"></script>
 
 </body>
