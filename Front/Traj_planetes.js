@@ -2,17 +2,17 @@
    VARIABLES GLOBALES
 ============================ */
 
-let trajectories = {};          // Données JSON regroupées par planète
-let trajectoryVisibility = {};  // { Mercure: {Euler:true, RK2:true}, ... }
-let planetPositions = {};       // Pour le popup
-let t = 0;                      // Animation
+let trajectories = {};
+let trajectoryVisibility = {};
+let planetPositions = {};
+let t = 0;
 let scaleFactor = 1;
-let slider;                     // Slider HTML
-let starBackground;             // Image étoilée
+let slider;
+let starBackground;
 
 
 /* ============================
-   PRELOAD : charger l'image étoilée
+   PRELOAD
 ============================ */
 
 function preload() {
@@ -21,24 +21,22 @@ function preload() {
 
 
 /* ============================
-   SETUP P5.JS
+   SETUP
 ============================ */
 
 function setup() {
     let canvas = createCanvas(700, 700);
     canvas.parent("canvasContainer");
-    console.log("Image chargée :", starBackground);
 
     slider = select("#zoomSlider");
 
-    // MULTI‑JSON : on peut charger plusieurs fichiers sans écraser
     document.getElementById("fileInput")
         .addEventListener("change", loadJSONFile);
 }
 
 
 /* ============================
-   DRAW P5.JS
+   DRAW
 ============================ */
 
 function draw() {
@@ -46,23 +44,22 @@ function draw() {
 
     scaleFactor = 1e-9 * slider.value();
 
-    /* === FOND ÉTOILÉ QUI ZOOME === */
-    push();
-    translate(width/2, height/2);
-    scale(scaleFactor * 0.15);
-    imageMode(CENTER);
-    image(starBackground, 0, 0, starBackground.width, starBackground.height);
-    pop();
+    if (starBackground) {
+        push();
+        translate(width / 2, height / 2);
+        scale(scaleFactor * 0.15);
+        imageMode(CENTER);
+        image(starBackground, 0, 0);
+        pop();
+    }
 
-    // Soleil
     fill(255, 200, 0);
     noStroke();
-    ellipse(width/2, height/2, 20, 20);
+    ellipse(width / 2, height / 2, 20, 20);
 
     if (Object.keys(trajectories).length === 0) return;
 
     for (let planetName in trajectories) {
-
         if (!trajectoryVisibility[planetName]) continue;
 
         let trajData = trajectories[planetName];
@@ -79,28 +76,32 @@ function draw() {
 
 
 /* ============================
-   FONCTION D'AFFICHAGE TRAJECTOIRE
+   TRAJECTOIRE
 ============================ */
 
 function drawTrajectory(traj, color, planetName) {
+    if (!traj || !traj.length) return;
 
     stroke(color);
     noFill();
     beginShape();
+
     for (let p of traj) {
-        let x = width/2 + p[0][0] * scaleFactor;
-        let y = width/2 + p[0][1] * scaleFactor;
+        let x = width / 2 + p[0][0] * scaleFactor;
+        let y = height / 2 + p[0][1] * scaleFactor; // ✔ corrigé
         vertex(x, y);
     }
+
     endShape();
 
     let index = t % traj.length;
     let pos = traj[index][0];
 
-    let px = width/2 + pos[0] * scaleFactor;
-    let py = height/2 + pos[1] * scaleFactor;
+    let px = width / 2 + pos[0] * scaleFactor;
+    let py = height / 2 + pos[1] * scaleFactor;
 
     fill(color);
+    noStroke();
     ellipse(px, py, 10, 10);
 
     planetPositions[planetName] = { x: px, y: py };
@@ -111,7 +112,62 @@ function drawTrajectory(traj, color, planetName) {
 
 
 /* ============================
-   IMPORT JSON + FUSION MULTI‑JSON
+   NORMALISATION JSON
+============================ */
+
+function normalizePlanetName(name) {
+    name = name.toLowerCase();
+
+    const map = {
+        "mercury": "Mercure",
+        "mercure": "Mercure",
+        "venus": "Vénus",
+        "vénus": "Vénus",
+        "earth": "Terre",
+        "terre": "Terre",
+        "mars": "Mars",
+        "jupiter": "Jupiter",
+        "saturn": "Saturne",
+        "saturne": "Saturne",
+        "uranus": "Uranus",
+        "neptune": "Neptune"
+    };
+
+    return map[name] || name;
+}
+
+function normalizeMethodName(name) {
+    name = name.toLowerCase();
+
+    if (name.includes("euler")) return "Euler";
+    if (name.includes("rk2")) return "RK2";
+    if (name.includes("runge")) return "RK2";
+    if (name.includes("rk")) return "RK2";
+
+    return name;
+}
+
+function normalizeTrajectory(data) {
+    let result = [];
+
+    for (let entry of data) {
+        if (Array.isArray(entry) && Array.isArray(entry[0])) {
+            result.push(entry);
+        }
+        else if (Array.isArray(entry) && typeof entry[0] === "number") {
+            result.push([entry]);
+        }
+        else if (entry.x !== undefined && entry.y !== undefined) {
+            result.push([[entry.x, entry.y]]);
+        }
+    }
+
+    return result;
+}
+
+
+/* ============================
+   CHARGEMENT JSON
 ============================ */
 
 function loadJSONFile(event) {
@@ -120,44 +176,25 @@ function loadJSONFile(event) {
 
     let reader = new FileReader();
 
-    reader.onload = function(e) {
+    reader.onload = function (e) {
         try {
             const raw = JSON.parse(e.target.result);
 
-            const planetNameMap = {
-                "mercury": "Mercure",
-                "venus": "Vénus",
-                "earth": "Terre",
-                "mars": "Mars",
-                "jupiter": "Jupiter",
-                "saturn": "Saturne",
-                "uranus": "Uranus",
-                "neptune": "Neptune"
-            };
-
-            const methodNameMap = {
-                "euler": "Euler",
-                "rk2": "RK2"
-            };
-
-            // FUSION : on n'efface PAS trajectories
             for (let key in raw) {
-                const parts = key.split("-");
-                if (parts.length !== 2) continue;
+                let cleanKey = key.replace(/[_ ]/g, "-");
 
-                const planetKey = parts[0].toLowerCase();
-                const methodKey = parts[1].toLowerCase();
+                let parts = cleanKey.split("-");
+                if (parts.length < 2) continue;
 
-                const planetName = planetNameMap[planetKey] || planetKey;
-                const methodName = methodNameMap[methodKey] || methodKey;
+                let planetKey = normalizePlanetName(parts[0]);
+                let methodKey = normalizeMethodName(parts[1]);
 
-                if (!trajectories[planetName])
-                    trajectories[planetName] = {};
+                if (!trajectories[planetKey])
+                    trajectories[planetKey] = {};
 
-                trajectories[planetName][methodName] = raw[key];
+                trajectories[planetKey][methodKey] =
+                    normalizeTrajectory(raw[key]);
             }
-
-            console.log("Trajectoires fusionnées :", trajectories);
 
             createAccordion();
             activateCheckboxes();
@@ -172,7 +209,7 @@ function loadJSONFile(event) {
 
 
 /* ============================
-   ACCORDÉON + CASES À COCHER
+   ACCORDÉON
 ============================ */
 
 function createAccordion() {
@@ -180,26 +217,25 @@ function createAccordion() {
     container.innerHTML = "";
 
     for (let planetName in trajectories) {
-
         container.innerHTML += `
             <div class="accordion-item">
                 <button class="accordion-header">${planetName}</button>
                 <div class="accordion-content">
-
                     <label>
                         <input type="checkbox" class="trajCheck"
                                data-planet="${planetName}"
-                               data-method="Euler" ${trajectories[planetName].Euler ? "checked" : ""}>
-                        Trajectoire Euler
+                               data-method="Euler"
+                               ${trajectories[planetName].Euler ? "checked" : ""}>
+                        Euler
                     </label>
 
                     <label>
                         <input type="checkbox" class="trajCheck"
                                data-planet="${planetName}"
-                               data-method="RK2" ${trajectories[planetName].RK2 ? "checked" : ""}>
-                        Trajectoire RK2
+                               data-method="RK2"
+                               ${trajectories[planetName].RK2 ? "checked" : ""}>
+                        RK2
                     </label>
-
                 </div>
             </div>
         `;
@@ -213,12 +249,11 @@ function createAccordion() {
     activateAccordion();
 }
 
-
 function activateAccordion() {
     let headers = document.querySelectorAll(".accordion-header");
 
     headers.forEach(header => {
-        header.addEventListener("click", function() {
+        header.addEventListener("click", function () {
             let content = this.nextElementSibling;
 
             if (content.style.maxHeight)
@@ -228,7 +263,6 @@ function activateAccordion() {
         });
     });
 }
-
 
 function activateCheckboxes() {
     const checks = document.querySelectorAll(".trajCheck");
@@ -245,13 +279,13 @@ function activateCheckboxes() {
 
 
 /* ============================
-   POPUP PLANÈTES
+   POPUP
 ============================ */
 
 function isMouseOnPlanet(px, py, radius = 10) {
     let dx = mouseX - px;
     let dy = mouseY - py;
-    return dx*dx + dy*dy <= radius*radius;
+    return dx * dx + dy * dy <= radius * radius;
 }
 
 function mousePressed() {
@@ -264,38 +298,68 @@ function mousePressed() {
     }
 }
 
+const planetDescriptions = {
+    "Mercure": `Mercure est une planète tellurique, c’est-à-dire faite de roches, comme ses voisines Vénus, Mars et la Terre. 
+Mais elle présente la particularité d’avoir un noyau surdéveloppé et d’être essentiellement composée de fer.`,
+
+    "Vénus": `Il s’agit de la deuxième planète la plus proche du Soleil. 
+Son atmosphère très dense, composée à 96% de CO₂, provoque un effet de serre extrême, faisant de Vénus la planète la plus chaude du système solaire.`,
+
+    "Terre": `La Terre est la troisième planète du système solaire. 
+C’est la seule planète connue à abriter la vie, grâce à sa température modérée, son atmosphère et la présence d’eau liquide.`,
+
+    "Mars": `Mars est la quatrième planète du système solaire. 
+C’est une planète tellurique à l’atmosphère très fine, connue pour ses volcans géants, ses canyons et ses calottes polaires.`,
+
+    "Jupiter": `Jupiter est la cinquième planète du système solaire et la plus massive. 
+C’est une géante gazeuse composée principalement d’hydrogène et d’hélium, avec une célèbre Grande Tache Rouge.`,
+
+    "Saturne": `Saturne est la sixième planète du système solaire, célèbre pour son système d’anneaux spectaculaires, composés de glace et de roche.`,
+
+    "Uranus": `Uranus est une géante glacée, avec une atmosphère composée principalement d’hydrogène, d’hélium et de méthane. 
+Elle est connue pour son axe de rotation fortement incliné.`,
+
+    "Neptune": `Neptune est la huitième planète du système solaire, une géante glacée aux vents extrêmement violents et à la couleur bleue marquée par le méthane.`
+};
+
+const planetImages = {
+    "Mercure": "mercure.jpg",
+    "Vénus": "venus.jpg",
+    "Terre": "terre.jpg",
+    "Mars": "mars.jpg",
+    "Jupiter": "jupiter.jpg",
+    "Saturne": "saturne.jpg",
+    "Uranus": "uranus.jpg",
+    "Neptune": "neptune.jpg"
+};
+
 function openPlanetPopup(name) {
     document.getElementById("popupTitle").textContent = name;
 
-    let details = {
-        "Mercure": "Première planète du système solaire.",
-        "Vénus": "Atmosphère dense, effet de serre extrême.",
-        "Terre": "Notre planète bleue.",
-        "Mars": "La planète rouge.",
-        "Jupiter": "La plus grande planète.",
-        "Saturne": "Connue pour ses anneaux.",
-        "Uranus": "Rotation inclinée.",
-        "Neptune": "Planète bleue glacée."
-    };
+    document.getElementById("popupDetails").innerHTML =
+        planetDescriptions[name] || "Aucune information disponible.";
 
-    document.getElementById("popupDetails").textContent =
-        details[name] || "Aucune information disponible.";
+    const img = document.getElementById("popupImage");
+    if (img) {
+        img.src = planetImages[name] || "";
+        img.style.display = planetImages[name] ? "block" : "none";
+    }
 
     document.getElementById("planetInfoPopup").style.display = "flex";
 }
 
-document.getElementById("closePopup").onclick = function() {
+document.getElementById("closePopup").onclick = function () {
     document.getElementById("planetInfoPopup").style.display = "none";
 };
 
-window.onclick = function(event) {
+window.onclick = function (event) {
     let popup = document.getElementById("planetInfoPopup");
     if (event.target === popup) {
         popup.style.display = "none";
     }
 };
 
-document.addEventListener("keydown", function(event) {
+document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
         document.getElementById("planetInfoPopup").style.display = "none";
     }

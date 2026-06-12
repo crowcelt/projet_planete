@@ -41,7 +41,7 @@ h1 {
 #controlsBox {
     position: fixed;
     left: 20px;
-    top: 50%;
+    top: 65%;
     transform: translateY(-50%);
     width: 240px;
     padding: 20px;
@@ -53,23 +53,6 @@ h1 {
 
     backdrop-filter: blur(6px);
 }
-
-#controlsBox {
-    position: fixed;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 240px;
-    padding: 20px;
-
-    background: rgba(20, 20, 30, 0.85);
-    border: 1px solid #3a3a4a;
-    border-radius: 15px;   /* ← ARRONDI ICI */
-    box-shadow: 0 0 15px rgba(0,0,0,0.6);
-
-    backdrop-filter: blur(6px);
-}
-
 
 /* ======== CASES À COCHER ======== */
 
@@ -108,7 +91,7 @@ h1 {
 
 /* Fond étoilé derrière les planètes */
 #canvasContainer canvas {
-   
+    background-image: url("etoiles.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
