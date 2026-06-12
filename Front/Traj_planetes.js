@@ -2,12 +2,19 @@ let data = null;
 let trajectories = {};
 let planetVisibility = {};   // NEW : visibilité des planètes
 let t = 0;
-let scaleFactor = 1e-9;
+let scaleFactor;
+let planetPositions = {};
+let slider;
+
 
 function setup() {
     let canvas = createCanvas(700, 700);
     canvas.parent("canvasContainer");
     background(0);
+    slider = createSlider(0, 2, 0, 0.01);
+    slider.parent("canvasContainer");
+    scaleFactor = 1e-9*slider.value(); // Ajustez selon vos données
+
 
     document.getElementById("fileInput").addEventListener("change", loadJSONFile);
 }
@@ -15,6 +22,8 @@ function setup() {
 function draw() {
     background(0);
 
+    scaleFactor = 1e-9*slider.value();
+    console.log("Scale factor:", scaleFactor);
     // Soleil
     fill(255, 200, 0);
     noStroke();
@@ -49,6 +58,11 @@ function draw() {
         ellipse(width/2 + pos[0] * scaleFactor,
                 height/2 + pos[1] * scaleFactor,
                 10, 10);
+        let px = width/2 + pos[0] * scaleFactor;
+        let py = height/2 + pos[1] * scaleFactor;
+
+        planetPositions[planetName] = { x: px, y: py };
+
 
         fill(255);
         text(planetName,
@@ -102,3 +116,95 @@ function createCheckboxes() {
         container.appendChild(label);
     }
 }
+
+function isMouseOnPlanet(px, py, radius = 10) {
+    let dx = mouseX - px;
+    let dy = mouseY - py;
+    return dx*dx + dy*dy <= radius*radius;
+}
+
+function mousePressed() {
+    for (let planetName in planetPositions) {
+        let p = planetPositions[planetName];
+
+        if (isMouseOnPlanet(p.x, p.y, 10)) {
+            openPlanetPopup(planetName);
+        }
+    }
+}
+function openPlanetPopup(name) {
+    document.getElementById("popupTitle").textContent = name;
+
+    let details = {
+        "Mercure": "Première planète du système solaire. Très chaude.",
+        "Vénus": "Atmosphère dense, effet de serre extrême.",
+        "Terre": "Notre planète bleue.",
+        "Mars": "La planète rouge.",
+        "Jupiter": "La plus grande planète.",
+        "Saturne": "Connue pour ses anneaux.",
+        "Uranus": "Rotation inclinée.",
+        "Neptune": "Planète bleue glacée."
+    };
+
+    document.getElementById("popupDetails").textContent =
+        details[name] || "Aucune information disponible.";
+
+    document.getElementById("planetInfoPopup").style.display = "flex";
+}
+document.getElementById("closePopup").onclick = function() {
+    document.getElementById("planetInfoPopup").style.display = "none";
+};
+
+window.onclick = function(event) {
+    let popup = document.getElementById("planetInfoPopup");
+    if (event.target === popup) {
+        popup.style.display = "none";
+    }
+};
+
+document.addEventListener("keydown", function(event) {
+    if (event.key === "Escape") {
+        document.getElementById("planetInfoPopup").style.display = "none";
+    }
+});
+let planetNames = ["Mercure", "Vénus", "Terre", "Mars", "Jupiter", "Saturne", "Uranus", "Neptune"];
+
+function createAccordion() {
+    let container = document.getElementById("accordionContainer");
+
+    planetNames.forEach(name => {
+        container.innerHTML += `
+            <div class="accordion-item">
+                <button class="accordion-header">${name}</button>
+                <div class="accordion-content">
+                    <button onclick="selectMethod('${name}', 'Euler')">Trajectoire Euler</button>
+                    <button onclick="selectMethod('${name}', 'EK')">Trajectoire EK</button>
+                </div>
+            </div>
+        `;
+    });
+
+    activateAccordion();
+}
+
+function activateAccordion() {
+    let headers = document.querySelectorAll(".accordion-header");
+
+    headers.forEach(header => {
+        header.addEventListener("click", function() {
+            let content = this.nextElementSibling;
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+    });
+}
+
+createAccordion();
+
+
+
+

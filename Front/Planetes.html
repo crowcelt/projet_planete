@@ -9,9 +9,15 @@
     <!-- Import de p5.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
-    <!--script-->
-    <script src="Traj_planetes.js"></script>
 </head>
+
+<div id="planetInfoPopup" class="popup">
+    <div class="popup-content">
+        <span id="closePopup">&times;</span>
+        <h2 id="popupTitle"></h2>
+        <p id="popupDetails"></p>
+    </div>
+</div>
 
 <body>
     <h1>Visualisation des trajectoires (Projet CIR1)</h1>
@@ -19,9 +25,17 @@
     <p>Chargez votre fichier JSON généré par le programme C :</p>
     <input type="file" id="fileInput" accept=".json">
 <div id="controlsBox">
+    <div id="accordionContainer"></div>
     <h3>Affichage des planètes</h3>
     <div id="planetCheckboxes"></div>
 </div>
     <div id="canvasContainer"></div>
 </body>
+<!--script-->
+    <script src="Traj_planetes.js"></script>
+<div id="credits">
+<footer>
+    Projet CIR1 – Visualisation des trajectoires • Réalisé par Le Gall Corre Mickaël et Raphaël Corre – 2026
+</footer>
+</div>
 </html>
