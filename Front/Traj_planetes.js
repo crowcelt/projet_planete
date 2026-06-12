@@ -27,6 +27,7 @@ function preload() {
 function setup() {
     let canvas = createCanvas(700, 700);
     canvas.parent("canvasContainer");
+    console.log("Image chargée :", starBackground);
 
     slider = select("#zoomSlider");
 
@@ -67,10 +68,10 @@ function draw() {
         let trajData = trajectories[planetName];
 
         if (trajectoryVisibility[planetName].Euler && trajData.Euler)
-            drawTrajectory(trajData.Euler, "cyan", planetName);
+            drawTrajectory(trajData.Euler, "#ff3300", planetName);
 
         if (trajectoryVisibility[planetName].RK2 && trajData.RK2)
-            drawTrajectory(trajData.RK2, "magenta", planetName);
+            drawTrajectory(trajData.RK2, "#093aff", planetName);
     }
 
     t++;

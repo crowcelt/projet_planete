@@ -108,7 +108,7 @@ h1 {
 
 /* Fond étoilé derrière les planètes */
 #canvasContainer canvas {
-    background-image: url("etoiles.jpg");
+   
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
