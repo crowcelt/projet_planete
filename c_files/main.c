@@ -1,113 +1,120 @@
 /**
  * @file main.c
- * @brief Entry point for the Kepler solar system simulation project.
+ * @brief Simulation du système solaire complet avec la méthode RK2.
  *
- * Runs:
- *   1. Unit tests for all modules (commented out once validated)
- *   2. Earth-Sun simulation with Euler, asymmetric Euler and RK2
- *   3. Energy conservation check for each method
- *   4. Export of all trajectories to the JSON exchange file
+ * Chaque planète est simulée sur 2 orbites complètes avec un pas de temps
+ * adapté à sa période orbitale, pour éviter la divergence et limiter la
+ * taille du fichier JSON.
+ *
+ * Pas de temps et steps choisis pour ~2 orbites avec ~1000 points par orbite.
  */
 
-#include "vector.h"
-#include "trajectory.h"
-#include "planet.h"
-#include "solvers.h"
-#include "energy.h"
-#include "export.h"
+#include "../header/vector.h"
+#include "../header/trajectory.h"
+#include "../header/planet.h"
+#include "../header/solvers.h"
+#include "../header/energy.h"
+#include "../header/export.h"
 
 #include <stdio.h>
 
-/* Simulation parameters */
-#define DT_SECONDS   86400.0   /* 1 day in seconds */
-#define STEPS        365       /* Simulate ~1 year */
-#define OUTPUT_FILE  "output/trajectories.json"
+#define OUTPUT_FILE "output/trajectories.json"
+#define NB_PLANETS 8
+
+/*
+ * Paramètres par planète : { dt (s), steps }
+ * Période orbitale * 2 / dt = steps (~2000 points par planète)
+ *
+ * Mercure  : période 88j,   dt=4h    -> 2*88*6    = 1056 steps
+ * Vénus    : période 225j,  dt=12h   -> 2*225*2   = 900  steps
+ * Terre    : période 365j,  dt=12h   -> 2*365*2   = 1460 steps
+ * Mars     : période 687j,  dt=1j    -> 2*687      = 1374 steps
+ * Jupiter  : période 4333j, dt=5j   -> 2*4333/5   = 1733 steps
+ * Saturne  : période 10759j,dt=10j  -> 2*10759/10 = 2152 steps
+ * Uranus   : période 30687j,dt=30j  -> 2*30687/30 = 2046 steps
+ * Neptune  : période 60190j,dt=60j  -> 2*60190/60 = 2006 steps
+ */
+static double DT[NB_PLANETS]    = {
+    14400.0,   /* Mercure  : 4h */
+    43200.0,   /* Venus    : 12h */
+    43200.0,   /* Terre    : 12h */
+    86400.0,   /* Mars     : 1j */
+    432000.0,  /* Jupiter  : 5j */
+    864000.0,  /* Saturne  : 10j */
+    2592000.0, /* Uranus   : 30j */
+    5184000.0  /* Neptune  : 60j */
+};
+
+static int STEPS[NB_PLANETS] = {
+    1056,  /* Mercure */
+    900,   /* Venus */
+    1460,  /* Terre */
+    1374,  /* Mars */
+    1733,  /* Jupiter */
+    2152,  /* Saturne */
+    2046,  /* Uranus */
+    2006   /* Neptune */
+};
 
 int main(void)
 {
-    Planet earth_euler;
-    Planet earth_asym;
-    Planet earth_rk2;
-    Planet planets[3];
-    Vector r_sun = {0.0, 0.0, 0.0};
+    Planet planets[NB_PLANETS];
+    int i;
 
-    /*
-     * Unit tests — comment out once validated
-     */
-    vector_test();
-    point_test();
-    trajectory_test();
-    planet_test();
-
-    /* 
-     * Euler simulation
-     */
-    if (planet_init(&earth_euler, "earth-euler",
-                    MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
-        fprintf(stderr, "ERROR: planet_init earth-euler\n");
-        return 1;
+    /* ------------------------------------------------------------------
+     * Initialisation des 8 planètes
+     * ------------------------------------------------------------------ */
+    if (planet_init(&planets[0], "mercury-RK2", MASS_MERCURY, PERIHELION_MERCURY, V0_MERCURY) != 0) {
+        fprintf(stderr, "ERROR: planet_init mercury\n"); return 1;
     }
-    if (euler_simulate(&earth_euler, MASS_SUN, DT_SECONDS, STEPS) != 0) {
-        fprintf(stderr, "ERROR: euler_simulate\n");
-        return 1;
+    if (planet_init(&planets[1], "venus-RK2", MASS_VENUS, PERIHELION_VENUS, V0_VENUS) != 0) {
+        fprintf(stderr, "ERROR: planet_init venus\n"); return 1;
     }
-    printf("Euler:     %d points computed.\n", earth_euler.trajectory.size);
-
-    /* 
-     * Asymmetric Euler simulation
-     */
-    if (planet_init(&earth_asym, "earth-euler-asym",
-                    MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
-        fprintf(stderr, "ERROR: planet_init earth-euler-asym\n");
-        return 1;
+    if (planet_init(&planets[2], "earth-RK2", MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
+        fprintf(stderr, "ERROR: planet_init earth\n"); return 1;
     }
-    if (euler_asym_simulate(&earth_asym, MASS_SUN, DT_SECONDS, STEPS) != 0) {
-        fprintf(stderr, "ERROR: euler_asym_simulate\n");
-        return 1;
+    if (planet_init(&planets[3], "mars-RK2", MASS_MARS, PERIHELION_MARS, V0_MARS) != 0) {
+        fprintf(stderr, "ERROR: planet_init mars\n"); return 1;
     }
-    printf("Euler asym: %d points computed.\n", earth_asym.trajectory.size);
-
-    /*
-     * RK2 simulation
-     */
-    if (planet_init(&earth_rk2, "earth-RK2",
-                    MASS_EARTH, PERIHELION_EARTH, V0_EARTH) != 0) {
-        fprintf(stderr, "ERROR: planet_init earth-RK2\n");
-        return 1;
+    if (planet_init(&planets[4], "jupiter-RK2", MASS_JUPITER, PERIHELION_JUPITER, V0_JUPITER) != 0) {
+        fprintf(stderr, "ERROR: planet_init jupiter\n"); return 1;
     }
-    if (rk2_simulate(&earth_rk2, MASS_SUN, DT_SECONDS, STEPS) != 0) {
-        fprintf(stderr, "ERROR: rk2_simulate\n");
-        return 1;
+    if (planet_init(&planets[5], "saturn-RK2", MASS_SATURN, PERIHELION_SATURN, V0_SATURN) != 0) {
+        fprintf(stderr, "ERROR: planet_init saturn\n"); return 1;
     }
-    printf("RK2:        %d points computed.\n", earth_rk2.trajectory.size);
+    if (planet_init(&planets[6], "uranus-RK2", MASS_URANUS, PERIHELION_URANUS, V0_URANUS) != 0) {
+        fprintf(stderr, "ERROR: planet_init uranus\n"); return 1;
+    }
+    if (planet_init(&planets[7], "neptune-RK2", MASS_NEPTUNE, PERIHELION_NEPTUNE, V0_NEPTUNE) != 0) {
+        fprintf(stderr, "ERROR: planet_init neptune\n"); return 1;
+    }
 
-    /*
-     * Energy conservation check (prints to stdout)
-     **/
-    /* Uncomment to see detailed energy tables: */
-    /* energy_check(&earth_euler, MASS_SUN, r_sun); */
-    /* energy_check(&earth_asym,  MASS_SUN, r_sun); */
-    /* energy_check(&earth_rk2,   MASS_SUN, r_sun); */
-    (void)r_sun; /* suppress unused warning when checks are commented out */
+    /* ------------------------------------------------------------------
+     * Simulation RK2 avec pas de temps adapté par planète
+     * ------------------------------------------------------------------ */
+    for (i = 0; i < NB_PLANETS; i++) {
+        if (rk2_simulate(&planets[i], MASS_SUN, DT[i], STEPS[i]) != 0) {
+            fprintf(stderr, "ERROR: rk2_simulate %s\n", planets[i].name);
+            return 1;
+        }
+        printf("%s: %d points (dt=%.0fs)\n",
+               planets[i].name, planets[i].trajectory.size, DT[i]);
+    }
 
-    /* 
-     * Export to JSON
-     **/
-    planets[0] = earth_euler;
-    planets[1] = earth_asym;
-    planets[2] = earth_rk2;
-
-    if (export_to_file(OUTPUT_FILE, planets, 3) != 0) {
+    /* ------------------------------------------------------------------
+     * Export JSON
+     * ------------------------------------------------------------------ */
+    if (export_to_file(OUTPUT_FILE, planets, NB_PLANETS) != 0) {
         fprintf(stderr, "ERROR: export_to_file\n");
         return 1;
     }
 
-    /* 
-    * Cleanup
-    **/
-    planet_free(&earth_euler);
-    planet_free(&earth_asym);
-    planet_free(&earth_rk2);
+    /* ------------------------------------------------------------------
+     * Cleanup
+     * ------------------------------------------------------------------ */
+    for (i = 0; i < NB_PLANETS; i++) {
+        planet_free(&planets[i]);
+    }
 
     return 0;
 }

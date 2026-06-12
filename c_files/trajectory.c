@@ -3,7 +3,7 @@
  * @brief Implementation of Point and Trajectory structures.
  */
 
-#include "trajectory.h"
+#include "../header/trajectory.h"
 #include <stdlib.h>
 #include <stdio.h>
 

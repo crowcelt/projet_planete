@@ -67,8 +67,24 @@ void planet_test(void);
 #define PERIHELION_VENUS  1.075e11
 #define V0_VENUS     3.526e4
 
-#define MASS_MARS    6.417e23
+#define MASS_MARS         6.417e23
 #define PERIHELION_MARS   2.067e11
-#define V0_MARS      2.650e4
+#define V0_MARS           2.650e4
+
+#define MASS_JUPITER      1.898e27
+#define PERIHELION_JUPITER 7.405e11
+#define V0_JUPITER        1.372e4
+
+#define MASS_SATURN       5.683e26
+#define PERIHELION_SATURN 1.353e12
+#define V0_SATURN         1.014e4
+
+#define MASS_URANUS       8.681e25
+#define PERIHELION_URANUS 2.735e12
+#define V0_URANUS         7.130e3
+
+#define MASS_NEPTUNE      1.024e26
+#define PERIHELION_NEPTUNE 4.460e12
+#define V0_NEPTUNE        5.480e3
 
 #endif /* PLANET_H */
