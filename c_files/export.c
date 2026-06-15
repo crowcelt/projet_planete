@@ -22,7 +22,7 @@ void export_planet(FILE *file, const Planet *planet, int is_last)
 
         /* Format: [[rx, ry, rz],[vx, vy, vz], t] */
         fprintf(file,
-                "[[%e, %e, %e],[%e, %e, %e], %d]",
+                "[[%e, %e, %e],[%e, %e, %e], %e]",
                 p.r.x, p.r.y, p.r.z,
                 p.v.x, p.v.y, p.v.z,
                 p.t);

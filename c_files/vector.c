@@ -61,12 +61,9 @@ void vector_test(void)
     printf("=== vector_test ===\n");
     printf("a         = (%.2f, %.2f, %.2f)\n", a.x, a.y, a.z);
     printf("b         = (%.2f, %.2f, %.2f)\n", b.x, b.y, b.z);
-    printf("a + b     = (%.2f, %.2f, %.2f)  [expected (5,7,9)]\n",
-           sum.x, sum.y, sum.z);
-    printf("a - b     = (%.2f, %.2f, %.2f)  [expected (-3,-3,-3)]\n",
-           diff.x, diff.y, diff.z);
-    printf("a * 2     = (%.2f, %.2f, %.2f)  [expected (2,4,6)]\n",
-           scaled.x, scaled.y, scaled.z);
+    printf("a + b     = (%.2f, %.2f, %.2f)  [expected (5,7,9)]\n",sum.x, sum.y, sum.z);
+    printf("a - b     = (%.2f, %.2f, %.2f)  [expected (-3,-3,-3)]\n",diff.x, diff.y, diff.z);
+    printf("a * 2     = (%.2f, %.2f, %.2f)  [expected (2,4,6)]\n",scaled.x, scaled.y, scaled.z);
     printf("||a||     = %.6f              [expected 3.741657]\n", norm);
     printf("===================\n");
 }

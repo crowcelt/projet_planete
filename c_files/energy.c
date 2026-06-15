@@ -45,7 +45,7 @@ void energy_check(const Planet *planet, double mass_sun, Vector r_sun)
         ec = energy_kinetic(planet->mass, p.v);
         ep = energy_potential(planet->mass, mass_sun, p.r, r_sun);
         e_total = ec + ep;
-        printf("%-8d %-20.6e %-20.6e %-20.6e\n", p.t, ec, ep, e_total);
+        printf("%-20.6e %-20.6e %-20.6e %-20.6e\n", p.t, ec, ep, e_total);
     }
 
     printf("========================\n");

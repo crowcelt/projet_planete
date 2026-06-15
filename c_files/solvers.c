@@ -56,7 +56,7 @@ int euler_simulate(Planet *planet, double mass_sun, double dt, int steps)
         /* 3. v_{n+1} = v_n + a_n * dt */
         next.v = vector_add(current.v, vector_scale(accel, dt));
 
-        next.t = current.t + 1;
+        next.t = current.t + dt;
 
         if (trajectory_append(&planet->trajectory, next) != 0) {
             return -1;
@@ -94,7 +94,7 @@ int euler_asym_simulate(Planet *planet, double mass_sun, double dt, int steps)
         /* 3. v_{n+1} = v_n + a_{n+1} * dt */
         next.v = vector_add(current.v, vector_scale(accel, dt));
 
-        next.t = current.t + 1;
+        next.t = current.t + dt;
 
         if (trajectory_append(&planet->trajectory, next) != 0) {
             return -1;
@@ -134,7 +134,7 @@ int rk2_simulate(Planet *planet, double mass_sun, double dt, int steps)
 
         next.r = vector_add(current.r, k2_r);
         next.v = vector_add(current.v, k2_v);
-        next.t = current.t + 1;
+        next.t = current.t + dt;
 
         if (trajectory_append(&planet->trajectory, next) != 0) {
             return -1;
