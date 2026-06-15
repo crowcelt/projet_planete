@@ -5,15 +5,20 @@
 let trajectories = {};
 let trajectoryVisibility = {};
 let planetPositions = {};
+let dtByPlanet = {};
+let methodByPlanet = {};
 let t = 0;
 let scaleFactor = 1;
 let slider;
 let starBackground;
 
-//Facteur reglable pour la taille des planetes 
+// Facteur réglable pour la taille des planètes 
 let planetSizeFactor = 0.001;
 
-// Rayons reels des planetes (km) 
+// Empêche la fermeture immédiate du popup
+let popupJustOpened = false;
+
+// Rayons réels des planètes (km)
 const realPlanetRadius = {
     "Mercure": 2440,
     "Vénus": 6052,
@@ -67,7 +72,7 @@ function draw() {
 
     scaleFactor = 1e-9 * slider.value();
 
-    /* FOND ETOILE */
+    /* Fond étoilé */
     if (starBackground) {
         push();
         imageMode(CORNER);
@@ -98,7 +103,7 @@ function draw() {
 }
 
 /* ============================
-   TRAJECTOIRE
+   TRAJECTOIRE + ANIMATION
 ============================ */
 
 function drawTrajectory(traj, color, planetName) {
@@ -116,13 +121,18 @@ function drawTrajectory(traj, color, planetName) {
 
     endShape();
 
+    /* Animation */
+    const dt = dtByPlanet[planetName] || 3600;
+    const baseDt = 14400;
+    const step = Math.max(1, Math.floor(baseDt / dt));
+
     let index = t % traj.length;
     let pos = traj[index][0];
 
     let px = width / 2 + pos[0] * scaleFactor;
     let py = height / 2 + pos[1] * scaleFactor;
 
-    // Taille réaliste de la planète 
+    /* Taille réaliste */
     let radiusKm = realPlanetRadius[planetName] || 3000;
     let displaySize = radiusKm * planetSizeFactor;
 
@@ -172,6 +182,11 @@ function normalizeMethodName(name) {
     return name;
 }
 
+function extractDtFromKey(key) {
+    const match = key.match(/dt(\d+)/);
+    return match ? Number(match[1]) : 3600;
+}
+
 function normalizeTrajectory(data) {
     let result = [];
 
@@ -212,12 +227,16 @@ function loadJSONFile(event) {
 
                 let planetKey = normalizePlanetName(parts[0]);
                 let methodKey = normalizeMethodName(parts[1]);
+                let dt = extractDtFromKey(cleanKey);
 
                 if (!trajectories[planetKey])
                     trajectories[planetKey] = {};
 
                 trajectories[planetKey][methodKey] =
                     normalizeTrajectory(raw[key]);
+
+                dtByPlanet[planetKey] = dt;
+                methodByPlanet[planetKey] = methodKey;
             }
 
             createAccordion();
@@ -232,7 +251,7 @@ function loadJSONFile(event) {
 }
 
 /* ============================
-   ACCORDEON
+   ACCORDÉON
 ============================ */
 
 function createAccordion() {
@@ -301,7 +320,7 @@ function activateCheckboxes() {
 }
 
 /* ============================
-   POPUP
+   POPUP → PANNEAU LATÉRAL DROIT
 ============================ */
 
 function isMouseOnPlanet(px, py, radius = 10) {
@@ -320,28 +339,57 @@ function mousePressed() {
     }
 }
 
+function openPlanetPopup(name) {
+
+    popupJustOpened = true; // Empêche la fermeture immédiate
+
+    setTimeout(() => popupJustOpened = false, 100);
+
+    document.getElementById("popupTitle").textContent = name;
+
+    document.getElementById("popupDetails").innerHTML =
+        planetDescriptions[name] || "Aucune information disponible.";
+
+    const img = document.getElementById("popupImage");
+    img.src = planetImages[name] || "";
+    img.style.display = planetImages[name] ? "block" : "none";
+
+    const moreLink = document.getElementById("popupMore");
+    moreLink.href = planetLinks[name] || "#";
+
+    document.getElementById("planetInfoPanel").classList.add("open");
+}
+
+/* Fermeture via la croix */
+document.getElementById("closePopup").onclick = function () {
+    document.getElementById("planetInfoPanel").classList.remove("open");
+};
+
+/* Fermeture via Échap */
+document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+        document.getElementById("planetInfoPanel").classList.remove("open");
+    }
+});
+
+/* Fermeture en cliquant dans le vide */
+document.addEventListener("click", function (event) {
+
+    const panel = document.getElementById("planetInfoPanel");
+
+    if (popupJustOpened) return;
+
+    if (panel.classList.contains("open") && !panel.contains(event.target)) {
+        panel.classList.remove("open");
+    }
+});
+
+/* ============================
+   DESCRIPTIONS
+============================ */
+
 const planetDescriptions = {
-    "Mercure": `Mercure est une planète tellurique, c’est-à-dire faite de roches, comme ses voisines Vénus, Mars et la Terre. 
-Mais elle présente la particularité d’avoir un noyau surdéveloppé et d’être essentiellement composée de fer.`,
-
-    "Vénus": `Il s’agit de la deuxième planète la plus proche du Soleil. 
-Son atmosphère très dense, composée à 96% de CO₂, provoque un effet de serre extrême, faisant de Vénus la planète la plus chaude du système solaire.`,
-
-    "Terre": `La Terre est la troisième planète du système solaire. 
-C’est la seule planète connue à abriter la vie, grâce à sa température modérée, son atmosphère et la présence d’eau liquide.`,
-
-    "Mars": `Mars est la quatrième planète du système solaire. 
-C’est une planète tellurique à l’atmosphère très fine, connue pour ses volcans géants, ses canyons et ses calottes polaires.`,
-
-    "Jupiter": `Jupiter est la cinquième planète du système solaire et la plus massive. 
-C’est une géante gazeuse composée principalement d’hydrogène et d’hélium, avec une célèbre Grande Tache Rouge.`,
-
-    "Saturne": `Saturne est la sixième planète du système solaire, célèbre pour son système d’anneaux spectaculaires, composés de glace et de roche.`,
-
-    "Uranus": `Uranus est une géante glacée, avec une atmosphère composée principalement d’hydrogène, d’hélium et de méthane. 
-Elle est connue pour son axe de rotation fortement incliné.`,
-
-    "Neptune": `Neptune est la huitième planète du système solaire, une géante glacée aux vents extrêmement violents et à la couleur bleue marquée par le méthane.`
+    /* Mets ici la version détaillée que je t’ai envoyée */
 };
 
 const planetImages = {
@@ -365,40 +413,3 @@ const planetLinks = {
     "Uranus": "https://cnes.fr/dossiers/planete-uranus",
     "Neptune": "https://cnes.fr/dossiers/planete-neptune"
 };
-
-function openPlanetPopup(name) {
-    document.getElementById("popupTitle").textContent = name;
-
-    document.getElementById("popupDetails").innerHTML =
-        planetDescriptions[name] || "Aucune information disponible.";
-
-    const img = document.getElementById("popupImage");
-    if (img) {
-        img.src = planetImages[name] || "";
-        img.style.display = planetImages[name] ? "block" : "none";
-    }
-
-    const moreLink = document.getElementById("popupMore");
-    if (moreLink) {
-        moreLink.href = planetLinks[name] || "#";
-    }
-
-    document.getElementById("planetInfoPopup").style.display = "flex";
-}
-
-document.getElementById("closePopup").onclick = function () {
-    document.getElementById("planetInfoPopup").style.display = "none";
-};
-
-window.onclick = function (event) {
-    let popup = document.getElementById("planetInfoPopup");
-    if (event.target === popup) {
-        popup.style.display = "none";
-    }
-};
-
-document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") {
-        document.getElementById("planetInfoPopup").style.display = "none";
-    }
-});

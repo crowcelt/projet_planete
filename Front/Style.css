@@ -54,40 +54,14 @@ h1 {
     backdrop-filter: blur(6px);
 }
 
-/* ======== CASES A COCHER ======== */
-
-#planetCheckboxes label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-
-    margin: 10px 0;
-    padding: 6px 8px;
-
-    background: #1a1a22;
-    border: 1px solid #333;
-    border-radius: 6px;
-
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-#planetCheckboxes label:hover {
-    background: #24242f;
-    border-color: #4da6ff;
-}
-
-#planetCheckboxes input[type="checkbox"] {
-    transform: scale(1.2);
-    cursor: pointer;
-}
-
 /* ======== CANVAS ======== */
 
 #canvasContainer {
     margin-left: 350px;
     padding-top: 20px;
 }
+
+/* ======== CRÉDITS ======== */
 
 #credits {
     text-align: center;
@@ -99,46 +73,7 @@ h1 {
     margin-top: 20px;
 }
 
-/* ===== POPUP ===== */
-
-.popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(4px);
-    justify-content: center;
-    align-items: center;
-}
-
-.popup-content {
-    background: #1a1a22;
-    padding: 20px;
-    width: 350px;
-    border-radius: 12px;
-    border: 1px solid #4da6ff;
-    box-shadow: 0 0 20px rgba(0,0,0,0.7);
-    color: white;
-    text-align: center;
-}
-
-#closePopup {
-    float: right;
-    font-size: 24px;
-    cursor: pointer;
-    color: #4da6ff;
-}
-
-#closePopup:hover {
-    color: #77c3ff;
-}
-
-.accordion {
-    margin-top: 20px;
-}
+/* ======== ACCORDÉON ======== */
 
 .accordion-header {
     width: 100%;
@@ -168,7 +103,48 @@ h1 {
     transition: max-height 0.3s ease-out;
 }
 
-.accordion-content p {
-    margin: 10px 0;
-    color: #ddd;
+/* ======== PANNEAU INFO PLANÈTE (DROITE) ======== */
+
+#planetInfoPanel {
+    position: fixed;
+    top: 0;
+    right: -350px;
+    width: 350px;
+    height: 100%;
+    background: rgba(20, 20, 30, 0.95);
+    border-left: 2px solid #4da6ff;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.6);
+    padding: 20px;
+    color: white;
+    transition: right 0.4s ease;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+#planetInfoPanel.open {
+    right: 0;
+}
+
+#planetInfoPanel h2 {
+    text-align: center;
+    margin-top: 10px;
+}
+
+.moreLink {
+    display: block;
+    margin-top: 15px;
+    text-align: center;
+    color: #4da6ff;
+    text-decoration: underline;
+}
+
+#closePopup {
+    float: right;
+    font-size: 26px;
+    cursor: pointer;
+    color: #4da6ff;
+}
+
+#closePopup:hover {
+    color: #77c3ff;
 }
