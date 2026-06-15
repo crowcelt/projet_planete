@@ -11,7 +11,7 @@
  * Point
  * -------------------------------------------------------------------------- */
 
-Point point_create(Vector r, Vector v, int t)
+Point point_create(Vector r, Vector v, double t)
 {
     Point p;
     p.r = r;
@@ -29,7 +29,7 @@ void point_test(void)
     printf("=== point_test ===\n");
     printf("r = (%e, %e, %e)\n", p.r.x, p.r.y, p.r.z);
     printf("v = (%e, %e, %e)\n", p.v.x, p.v.y, p.v.z);
-    printf("t = %d\n", p.t);
+    printf("t = %f\n", p.t);
     printf("==================\n");
 }
 

@@ -21,7 +21,7 @@
 typedef struct {
     Vector r; /**< Position vector (m) */
     Vector v; /**< Velocity vector (m/s) */
-    int    t; /**< Time step index */
+    double t; /**< Real time in seconds */
 } Point;
 
 /**
@@ -31,7 +31,7 @@ typedef struct {
  * @param t Time step index
  * @return Initialized Point
  */
-Point point_create(Vector r, Vector v, int t);
+Point point_create(Vector r, Vector v, double t);
 
 /**
  * @brief Runs unit tests for point creation (prints results to stdout).
@@ -74,4 +74,4 @@ void trajectory_free(Trajectory *traj);
  */
 void trajectory_test(void);
 
-#endif /* TRAJECTORY_H */
+#endif 

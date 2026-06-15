@@ -77,7 +77,7 @@ void planet_test(void)
            earth.trajectory.points[0].v.x,
            earth.trajectory.points[0].v.y,
            earth.trajectory.points[0].v.z);
-    printf("t=0        : %d\n", earth.trajectory.points[0].t);
+    printf("t=0        : %f\n", earth.trajectory.points[0].t);
 
     planet_free(&earth);
     printf("Memory freed.\n");
