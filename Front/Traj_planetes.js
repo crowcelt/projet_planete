@@ -73,7 +73,7 @@ function windowResized() {
 ============================ */
 
 const planetcolor = {
-    "Mercure": "#b1b1b1",
+    "Mercure": "#4b4141",
     "Vénus": "#e5c27a",
     "Terre": "#6b93d6",
     "Mars": "#c1440e",
