@@ -7,18 +7,21 @@ let trajectoryVisibility = {};
 let planetPositions = {};
 let dtByPlanet = {};
 let methodByPlanet = {};
-let t = 0;
+let tByPlanet = {};
 let scaleFactor = 1;
 let slider;
+let speedSlider;
 let starBackground;
+let simulatedSeconds = 0;
 
-// Facteur réglable pour la taille des planètes 
 let planetSizeFactor = 0.001;
-
-// Empêche la fermeture immédiate du popup
 let popupJustOpened = false;
 
-// Rayons réels des planètes (km)
+/* Centre du système solaire */
+let systemCenterX;
+let systemCenterY;
+
+/* Rayons réels des planètes (km) */
 const realPlanetRadius = {
     "Mercure": 2440,
     "Vénus": 6052,
@@ -43,13 +46,26 @@ function preload() {
 ============================ */
 
 function setup() {
-    let canvas = createCanvas(700, 700);
+    let canvas = createCanvas(windowWidth, windowHeight);
     canvas.parent("canvasContainer");
 
+    systemCenterX = windowWidth * 0.55;
+    systemCenterY = windowHeight * 0.5;
+
+    canvas.elt.addEventListener("click", (e) => e.stopPropagation());
+
     slider = select("#zoomSlider");
+    speedSlider = select("#speedSlider");
 
     document.getElementById("fileInput")
         .addEventListener("change", loadJSONFile);
+}
+
+/* Redimensionnement automatique */
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    systemCenterX = windowWidth * 0.55;
+    systemCenterY = windowHeight * 0.5;
 }
 
 /* ============================
@@ -72,18 +88,22 @@ function draw() {
 
     scaleFactor = 1e-9 * slider.value();
 
-    /* Fond étoilé */
     if (starBackground) {
-        push();
-        imageMode(CORNER);
         image(starBackground, 0, 0, width, height);
-        pop();
     }
 
     /* Soleil */
     fill(255, 200, 0);
     noStroke();
-    ellipse(width / 2, height / 2, 20, 20);
+    ellipse(systemCenterX, systemCenterY, 20, 20);
+
+    // ⭐ AJOUT — compteur de jours AVANT le return
+    let speedFactor = speedSlider.value() / 50;
+    simulatedSeconds += (deltaTime / 1000) * speedFactor;
+    let simulatedDays = Math.floor(simulatedSeconds / 86400);
+    document.getElementById("dayCounter").textContent =
+        "Jours écoulés : " + simulatedDays;
+    // ⭐ FIN AJOUT
 
     if (Object.keys(trajectories).length === 0) return;
 
@@ -98,12 +118,10 @@ function draw() {
         if (trajectoryVisibility[planetName].RK2 && trajData.RK2)
             drawTrajectory(trajData.RK2, planetcolor[planetName], planetName);
     }
-
-    t++;
 }
 
 /* ============================
-   TRAJECTOIRE + ANIMATION
+   TRAJECTOIRE + ANIMATION RÉALISTE
 ============================ */
 
 function drawTrajectory(traj, color, planetName) {
@@ -114,25 +132,28 @@ function drawTrajectory(traj, color, planetName) {
     beginShape();
 
     for (let p of traj) {
-        let x = width / 2 + p[0][0] * scaleFactor;
-        let y = height / 2 + p[0][1] * scaleFactor;
+        let x = systemCenterX + p[0][0] * scaleFactor;
+        let y = systemCenterY + p[0][1] * scaleFactor;
         vertex(x, y);
     }
 
     endShape();
 
-    /* Animation */
     const dt = dtByPlanet[planetName] || 3600;
-    const baseDt = 14400;
-    const step = Math.max(1, Math.floor(baseDt / dt));
+    const accelerationFactor = 50000;
 
-    let index = t % traj.length;
+    if (!tByPlanet[planetName]) tByPlanet[planetName] = 0;
+
+    let speedFactor = speedSlider.value() / 50;
+
+    tByPlanet[planetName] += (deltaTime / 1000) * (accelerationFactor / dt) * speedFactor;
+
+    let index = Math.floor(tByPlanet[planetName]) % traj.length;
     let pos = traj[index][0];
 
-    let px = width / 2 + pos[0] * scaleFactor;
-    let py = height / 2 + pos[1] * scaleFactor;
+    let px = systemCenterX + pos[0] * scaleFactor;
+    let py = systemCenterY + pos[1] * scaleFactor;
 
-    /* Taille réaliste */
     let radiusKm = realPlanetRadius[planetName] || 3000;
     let displaySize = radiusKm * planetSizeFactor;
 
@@ -220,7 +241,7 @@ function loadJSONFile(event) {
             const raw = JSON.parse(e.target.result);
 
             for (let key in raw) {
-                let cleanKey = key.replace(/[_ ]/g, "-");
+                let cleanKey = key.replace(/[\/ _]/g, "-").toLowerCase();
 
                 let parts = cleanKey.split("-");
                 if (parts.length < 2) continue;
@@ -237,6 +258,8 @@ function loadJSONFile(event) {
 
                 dtByPlanet[planetKey] = dt;
                 methodByPlanet[planetKey] = methodKey;
+
+                if (!tByPlanet[planetKey]) tByPlanet[planetKey] = 0;
             }
 
             createAccordion();
@@ -320,7 +343,7 @@ function activateCheckboxes() {
 }
 
 /* ============================
-   POPUP → PANNEAU LATÉRAL DROIT
+   POPUP LATÉRAL
 ============================ */
 
 function isMouseOnPlanet(px, py, radius = 10) {
@@ -341,9 +364,8 @@ function mousePressed() {
 
 function openPlanetPopup(name) {
 
-    popupJustOpened = true; // Empêche la fermeture immédiate
-
-    setTimeout(() => popupJustOpened = false, 100);
+    popupJustOpened = true;
+    setTimeout(() => popupJustOpened = false, 150);
 
     document.getElementById("popupTitle").textContent = name;
 
@@ -360,19 +382,16 @@ function openPlanetPopup(name) {
     document.getElementById("planetInfoPanel").classList.add("open");
 }
 
-/* Fermeture via la croix */
 document.getElementById("closePopup").onclick = function () {
     document.getElementById("planetInfoPanel").classList.remove("open");
 };
 
-/* Fermeture via Échap */
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
         document.getElementById("planetInfoPanel").classList.remove("open");
     }
 });
 
-/* Fermeture en cliquant dans le vide */
 document.addEventListener("click", function (event) {
 
     const panel = document.getElementById("planetInfoPanel");
@@ -389,9 +408,153 @@ document.addEventListener("click", function (event) {
 ============================ */
 
 const planetDescriptions = {
-    /* Mets ici la version détaillée que je t’ai envoyée */
-};
 
+    "Mercure": `
+        <h3>Caractéristiques générales</h3>
+        Mercure est la plus petite planète du Système solaire et la plus proche du Soleil.
+        Elle possède un diamètre d’environ <b>4 880 km</b> et une densité très élevée.
+
+        <h3>Surface et géologie</h3>
+        Sa surface est recouverte de cratères, semblable à celle de la Lune.
+        Elle ne possède presque pas d’atmosphère, ce qui laisse le sol exposé aux impacts
+        et aux variations extrêmes de température.
+
+        <h3>Température</h3>
+        - Côté jour : jusqu’à <b>+430°C</b><br>
+        - Côté nuit : jusqu’à <b>-180°C</b>
+
+        <h3>Particularités</h3>
+        - Rotation très lente : un jour mercurien dure 176 jours terrestres.<br>
+        - Noyau métallique surdimensionné occupant plus de 60% du volume total.
+    `,
+
+    "Vénus": `
+        <h3>Caractéristiques générales</h3>
+        Vénus est presque aussi grande que la Terre (diamètre : <b>12 104 km</b>), 
+        mais son environnement est radicalement différent.
+
+        <h3>Atmosphère</h3>
+        Son atmosphère est composée à <b>96% de CO₂</b> et recouverte de nuages d’acide sulfurique.
+        La pression au sol est équivalente à celle ressentie à 900 m sous l’eau.
+
+        <h3>Température</h3>
+        - Température moyenne : <b>≈ 470°C</b><br>
+        L’effet de serre y est le plus intense du Système solaire.
+
+        <h3>Particularités</h3>
+        - Rotation rétrograde (elle tourne à l’envers).<br>
+        - Journée plus longue que son année.<br>
+        - Aucune lune connue.
+    `,
+
+    "Terre": `
+        <h3>Caractéristiques générales</h3>
+        La Terre est la seule planète connue abritant la vie.
+        Diamètre : <b>12 742 km</b>. Atmosphère riche en azote et oxygène.
+
+        <h3>Environnement</h3>
+        - Présence d’eau liquide en abondance.<br>
+        - Températures modérées grâce à l’effet de serre naturel.<br>
+        - Champ magnétique puissant protégeant des particules solaires.
+
+        <h3>Particularités</h3>
+        - Unique satellite : <b>la Lune</b>.<br>
+        - Plaques tectoniques actives.<br>
+        - Biosphère extrêmement diversifiée.
+    `,
+
+    "Mars": `
+        <h3>Caractéristiques générales</h3>
+        Mars est une planète rocheuse de couleur rouge due à l’oxyde de fer.
+        Diamètre : <b>6 779 km</b>.
+
+        <h3>Surface</h3>
+        - Olympus Mons : plus grand volcan du Système solaire.<br>
+        - Valles Marineris : canyon long de 4 000 km.<br>
+        - Calottes polaires de glace d’eau et de CO₂.
+
+        <h3>Atmosphère</h3>
+        Très fine, composée majoritairement de CO₂.
+
+        <h3>Particularités</h3>
+        - Preuves d’anciens cours d’eau.<br>
+        - Deux lunes : Phobos et Déimos.<br>
+        - Températures : de -140°C à +20°C.
+    `,
+
+    "Jupiter": `
+        <h3>Caractéristiques générales</h3>
+        Jupiter est la plus grande planète du Système solaire (diamètre : <b>139 820 km</b>).
+        C’est une géante gazeuse composée d’hydrogène et d’hélium.
+
+        <h3>Atmosphère</h3>
+        - Bandes nuageuses colorées.<br>
+        - Orages gigantesques.<br>
+        - La Grande Tache Rouge : tempête active depuis plus de 300 ans.
+
+        <h3>Satellites</h3>
+        Plus de <b>90 lunes</b>, dont les quatre lunes galiléennes :
+        Io, Europe, Ganymède et Callisto.
+
+        <h3>Particularités</h3>
+        - Champ magnétique extrêmement puissant.<br>
+        - Rotation très rapide : un jour dure 10 heures.
+    `,
+
+    "Saturne": `
+        <h3>Caractéristiques générales</h3>
+        Saturne est une géante gazeuse célèbre pour ses anneaux spectaculaires.
+        Diamètre : <b>116 460 km</b>.
+
+        <h3>Anneaux</h3>
+        Composés de milliards de particules de glace et de roche,
+        allant de quelques millimètres à plusieurs mètres.
+
+        <h3>Satellites</h3>
+        Plus de <b>80 lunes</b>, dont :
+        - Titan : atmosphère dense, lacs d’hydrocarbures.<br>
+        - Encelade : geysers d’eau, possible océan souterrain.
+
+        <h3>Particularités</h3>
+        - Très faible densité : elle flotterait dans l’eau.<br>
+        - Rotation rapide : jour de 10h30.
+    `,
+
+    "Uranus": `
+        <h3>Caractéristiques générales</h3>
+        Uranus est une géante glacée riche en eau, méthane et ammoniaque.
+        Diamètre : <b>50 724 km</b>.
+
+        <h3>Atmosphère</h3>
+        Couleur bleu-vert due au méthane absorbant la lumière rouge.
+
+        <h3>Inclinaison extrême</h3>
+        Son axe de rotation est incliné à <b>98°</b> :
+        la planète semble rouler sur son orbite.
+
+        <h3>Particularités</h3>
+        - Température minimale : -224°C.<br>
+        - Anneaux sombres et fins.<br>
+        - Plus de 25 lunes.
+    `,
+
+    "Neptune": `
+        <h3>Caractéristiques générales</h3>
+        Neptune est une géante glacée bleutée, légèrement plus petite qu’Uranus.
+        Diamètre : <b>49 244 km</b>.
+
+        <h3>Atmosphère</h3>
+        - Vents les plus rapides du Système solaire : jusqu’à 2 100 km/h.<br>
+        - Présence de tempêtes sombres similaires à celles de Jupiter.
+
+        <h3>Satellites</h3>
+        - Triton : lune majeure, orbite rétrograde, activité géologique.
+
+        <h3>Particularités</h3>
+        - Très éloignée du Soleil (4,5 milliards de km).<br>
+        - Température moyenne : -220°C.
+    `
+};
 const planetImages = {
     "Mercure": "mercure.jpg",
     "Vénus": "venus.jpg",
