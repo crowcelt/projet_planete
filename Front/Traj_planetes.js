@@ -73,7 +73,7 @@ function windowResized() {
 ============================ */
 
 const planetcolor = {
-    "Mercure": "#4b4141",
+    "Mercure": "#b1b1b1",
     "Vénus": "#e5c27a",
     "Terre": "#6b93d6",
     "Mars": "#c1440e",
@@ -328,7 +328,7 @@ function activateAccordion() {
         });
     });
 }
-
+//pour activer les checkboxes et mettre à jour la visibilité des trajectoires
 function activateCheckboxes() {
     const checks = document.querySelectorAll(".trajCheck");
 
@@ -381,31 +381,18 @@ function openPlanetPopup(name) {
 
     document.getElementById("planetInfoPanel").classList.add("open");
 }
-
+//pour fermer le popup avec la croix
 document.getElementById("closePopup").onclick = function () {
     document.getElementById("planetInfoPanel").classList.remove("open");
 };
-
+//pour fermer le popup avec echap
 document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") {
         document.getElementById("planetInfoPanel").classList.remove("open");
     }
 });
 
-document.addEventListener("click", function (event) {
-
-    const panel = document.getElementById("planetInfoPanel");
-
-    if (popupJustOpened) return;
-
-    if (panel.classList.contains("open") && !panel.contains(event.target)) {
-        panel.classList.remove("open");
-    }
-});
-
-/* ============================
-   DESCRIPTIONS
-============================ */
+//DESCRIPTIONS
 
 const planetDescriptions = {
 
@@ -554,7 +541,7 @@ const planetDescriptions = {
         - Très éloignée du Soleil (4,5 milliards de km).<br>
         - Température moyenne : -220°C.
     `
-};
+};  
 const planetImages = {
     "Mercure": "mercure.jpg",
     "Vénus": "venus.jpg",
